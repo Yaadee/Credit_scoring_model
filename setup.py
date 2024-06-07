@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages
+
 setup(
     name='credit_scoring_model',
+    version='0.1.0',
     packages=find_packages(include=['src', 'src.*']),
     install_requires=[
         'aiohttp==3.9.5',

@@ -5,3 +5,6 @@ credit_scoring_model.egg-info/SOURCES.txt
 credit_scoring_model.egg-info/dependency_links.txt
 credit_scoring_model.egg-info/requires.txt
 credit_scoring_model.egg-info/top_level.txt
+tests/test_data.py
+tests/test_models.py
+tests/test_utils.py
