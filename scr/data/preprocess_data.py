@@ -4,7 +4,25 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 
-def preprocess_data(df):
+# Import the custom load_data function from load_data.py
+from load_data import load_data
+
+# Load your dataset using the custom function
+data_path = 'creditScoring/data/raw/data.csv'  # Replace with the path to your data file
+variable_definitions_path = 'creditScoring/data/raw/Xente_Variable_Definitions.csv'  # Replace with the path to your variable definitions file
+df, variable_definitions = load_data(data_path, variable_definitions_path)
+
+def extract_numeric_parts(df):
+    df['TransactionId'] = df['TransactionId'].str.extract('(\d+)', expand=False).astype(float)
+    df['BatchId'] = df['BatchId'].str.extract('(\d+)', expand=False).astype(float)
+    df['AccountId'] = df['AccountId'].str.extract('(\d+)', expand=False).astype(float)
+    df['SubscriptionId'] = df['SubscriptionId'].str.extract('(\d+)', expand=False).astype(float)
+    df['CustomerId'] = df['CustomerId'].str.extract('(\d+)', expand=False).astype(float)
+    df['ProviderId'] = df['ProviderId'].str.extract('(\d+)', expand=False).astype(float)
+    df['ProductId'] = df['ProductId'].str.extract('(\d+)', expand=False).astype(float)
+    df['ChannelId'] = df['ChannelId'].str.extract('(\d+)', expand=False).astype(float)
+
+def preprocess_df(df):
     # Separate numeric and categorical columns
     numeric_features = df.select_dtypes(include=['int64', 'float64']).columns
     categorical_features = df.select_dtypes(include=['object']).columns
@@ -31,8 +49,15 @@ def preprocess_data(df):
     # Apply the transformations to the dataset
     df_processed = preprocessor.fit_transform(df)
     
-    # Convert the processed data back to a DataFrame
+    # Convert the processed dataset back to a DataFrame
     df_processed = pd.DataFrame(df_processed, columns=numeric_features.tolist() + 
                                                     preprocessor.named_transformers_['cat']['onehot'].get_feature_names_out(categorical_features).tolist())
     
     return df_processed
+
+# Apply the functions
+extract_numeric_parts(df)
+df_processed = preprocess_df(df)
+
+# Save the processed DataFrame to a CSV file
+df_processed.to_csv('creditScoring/data/processed/processed.csv', index=False)

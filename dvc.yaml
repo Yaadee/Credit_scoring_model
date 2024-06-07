@@ -1,9 +1,0 @@
-stages:
-  preprocess:
-    cmd: python src/main.py
-    deps:
-      - src/main.py
-      - data/raw/data.csv
-      - data/raw/Xente_Variable_Definitions.csv
-    outs:
-      - data/processed/transactions_processed.csv
