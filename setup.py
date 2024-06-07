@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-
 setup(
     name='credit_scoring_model',
     packages=find_packages(include=['src', 'src.*']),
