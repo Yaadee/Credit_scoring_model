@@ -1,52 +1,40 @@
-# # src/main.py
-# from data.load_data import load_data
-# from data.preprocess_data import preprocess_data
-# from data.feature_engineering import create_features
-# from models.train_model import train_model
-# from models.evaluate_model import evaluate_model
-# import pandas as pd
-
-# if __name__ == "__main__":
-#     data, variable_definitions = load_data('creditScoring/data/raw/data.csv', 'creditScoring/data/raw/Xente_Variable_Definitions.csv')
-    
-#     data = create_features(data)
-#     data_processed = preprocess_data(data)
-    
-#     # Splitting the data into features and target
-#     X = data_processed
-#     y = data['FraudResult']  # Adjust according to your target column name
-    
-#     # Train the model
-#     model = train_model(X, y)
-    
-#     # Evaluate the model
-#     metrics = evaluate_model(model, X, y)
-#     print(metrics)
 from data.load_data import load_data
 from data.preprocess_data import preprocess_data
-from data.feature_engineering import create_features
+from data.feature_engineering import create_aggregate_features, extract_date_features
 from models.train_model import train_model
 from models.evaluate_model import evaluate_model
 import pandas as pd
 
-if __name__ == "__main__":
-    data, variable_definitions = load_data('creditScoring/data/raw/data.csv', 'creditScoring/data/raw/Xente_Variable_Definitions.csv')
+def main():
+    # Load data
+    data = load_data('data/raw/data.csv')
     
-    data = create_features(data)
-    data_processed = preprocess_data(data)
+    # Feature engineering
+    data = create_aggregate_features(data)
+    data = extract_date_features(data)
     
-    # Ensure data_processed is a DataFrame
-    if not isinstance(data_processed, pd.DataFrame):
-        data_processed = pd.DataFrame(data_processed)
-
-    # Splitting the data into features and target
-    X = data_processed
-    y = data['FraudResult']  # Adjust according to your target column name
+    # Preprocess data
+    data_preprocessed = preprocess_data(data)
     
-    # Train the model and save it to 'model.pkl'
-    model = train_model(X, y, model_path='creditScoring/scr/models/model.pkl')
+    # Convert preprocessed data back to DataFrame for saving
+    data_preprocessed_df = pd.DataFrame(data_preprocessed)
+    data_preprocessed_df['FraudResult'] = data['FraudResult'].values
     
-    # Evaluate the model
-    metrics = evaluate_model(model, X, y)
+    # Save processed data
+    data_preprocessed_df.to_csv('data/processed/data_preprocessed.csv', index=False)
+    
+    # Load processed data
+    processed_data = pd.read_csv('data/processed/data_preprocessed.csv')
+    X = processed_data.drop('FraudResult', axis=1)
+    y = processed_data['FraudResult']
+    
+    # Train model
+    model, X_test, y_test = train_model(X, y)
+    
+    # Evaluate model
+    metrics = evaluate_model(model, X_test, y_test)
     print(metrics)
+    
+if __name__ == "__main__":
+    main()
 

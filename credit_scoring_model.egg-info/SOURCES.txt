@@ -1,0 +1,7 @@
+README.md
+setup.py
+credit_scoring_model.egg-info/PKG-INFO
+credit_scoring_model.egg-info/SOURCES.txt
+credit_scoring_model.egg-info/dependency_links.txt
+credit_scoring_model.egg-info/requires.txt
+credit_scoring_model.egg-info/top_level.txt
