@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import math
 
 # Load the processed DataFrame
-df_processed = pd.read_csv('creditScoring/data/processed/processed.csv')
+df_processed = pd.read_csv('data/processed/data_preprocessed.csv')
 
 # Overview of the Data
 def data_overview(df):
