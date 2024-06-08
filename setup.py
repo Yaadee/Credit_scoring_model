@@ -28,7 +28,6 @@ setup(
         'colorama==0.4.6',
         'configobj==5.0.8',
         'contourpy==1.2.1',
-        'credit-scoring-model==0.1.0',
         'cryptography==42.0.8',
         'cycler==0.12.1',
         'dictdiffer==0.9.0',
@@ -121,4 +120,6 @@ setup(
         'yarl==1.9.4',
         'zc.lockfile==3.0.post1',
     ],
+    python_requires='>=3.6',
+    setup_requires=['wheel'],
 )
