@@ -1,15 +1,4 @@
 
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-
-# def evaluate_model(model, X_test, y_test):
-#     y_pred = model.predict(X_test)
-#     return {
-#         "accuracy": accuracy_score(y_test, y_pred),
-#         "precision": precision_score(y_test, y_pred),
-#         "recall": recall_score(y_test, y_pred),
-#         "f1_score": f1_score(y_test, y_pred),
-#         "roc_auc": roc_auc_score(y_test, y_pred)
-#     }
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 def evaluate_model(model, X_test, y_test):
@@ -27,7 +16,7 @@ if __name__ == "__main__":
     from train_model import train_model
     import pandas as pd
     
-    data = pd.read_csv('data/processed/processed.csv')
+    data = pd.read_csv('creditScoring/data/processed/processed.csv')
     X = data.drop('FraudResult', axis=1)
     y = data['FraudResult']
     

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import math
 
 # Load the processed DataFrame
-df_processed = pd.read_csv('data/processed/data_preprocessed.csv')
+df_processed = pd.read_csv('creditScoring/data/processed/data_preprocessed.csv')
 
 # Overview of the Data
 def data_overview(df):
@@ -63,6 +63,12 @@ def outlier_detection(df):
         sns.boxplot(x=df[feature])
         plt.title(f'Box Plot of {feature}')
         plt.show()
+def plot_distribution(df, column):
+    plt.figure(figsize=(10, 6))
+    sns.histplot(df[column], kde=True)
+    plt.title(f'Distribution of {column}')
+    plt.show()
+
 
 # Perform EDA
 data_overview(df_processed)
@@ -72,3 +78,6 @@ categorical_feature_distribution(df_processed)
 correlation_analysis(df_processed)
 missing_values(df_processed)
 outlier_detection(df_processed)
+plot_distribution
+
+

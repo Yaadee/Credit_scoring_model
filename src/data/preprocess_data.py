@@ -1,66 +1,54 @@
-# # import pandas as pd
-# # from sklearn.preprocessing import StandardScaler, OneHotEncoder
-# # from sklearn.compose import ColumnTransformer
-# # from sklearn.pipeline import Pipeline
-# # from sklearn.impute import SimpleImputer
+import pandas as pd
+from feature_engineering import create_aggregate_features, extract_datetime_features, encode_categorical_variables, handle_missing_values, normalize_numerical_features, calculate_rfm, calculate_rfms_score, classify_users, perform_woe_binning
 
-# # # Import the custom load_data function from load_data.py
-# # from load_data import load_data
-
-# # # Load your dataset using the custom function
-# # data_path = 'data/raw/data.csv'  # Replace with the path to your data file
-# # variable_definitions_path = 'data/raw/Xente_Variable_Definitions.csv'  # Replace with the path to your variable definitions file
-# # df, variable_definitions = load_data(data_path, variable_definitions_path)
-
-# # def extract_numeric_parts(df):
-# #     df['TransactionId'] = df['TransactionId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['BatchId'] = df['BatchId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['AccountId'] = df['AccountId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['SubscriptionId'] = df['SubscriptionId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['CustomerId'] = df['CustomerId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['ProviderId'] = df['ProviderId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['ProductId'] = df['ProductId'].str.extract('(\d+)', expand=False).astype(float)
-# #     df['ChannelId'] = df['ChannelId'].str.extract('(\d+)', expand=False).astype(float)
-
-# # def preprocess_df(df):
-# #     # Separate numeric and categorical columns
-# #     numeric_features = df.select_dtypes(include=['int64', 'float64']).columns
-# #     categorical_features = df.select_dtypes(include=['object']).columns
-
-# #     # Define preprocessing for numeric features: impute missing values and scale
-# #     numeric_transformer = Pipeline(steps=[
-# #         ('imputer', SimpleImputer(strategy='median')),
-# #         ('scaler', StandardScaler())
-# #     ])
-
-# #     # Define preprocessing for categorical features: impute missing values and one-hot encode with max categories
-# #     categorical_transformer = Pipeline(steps=[
-# #         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-# #         ('onehot', OneHotEncoder(handle_unknown='ignore', max_categories=100, sparse_output=False))  # Limit categories and ensure dense output
-# #     ])
-
-# #     # Combine preprocessing steps
-# #     preprocessor = ColumnTransformer(
-# #         transformers=[
-# #             ('num', numeric_transformer, numeric_features),
-# #             ('cat', categorical_transformer, categorical_features)
-# #         ])
-
-# #     # Apply the transformations to the dataset
-# #     df_processed = preprocessor.fit_transform(df)
+def calculate_iv(feature, target):
+    # Placeholder function for IV calculation
+    iv = 0.1  # Placeholder value
     
-# #     # Convert the processed dataset back to a DataFrame
-# #     df_processed = pd.DataFrame(df_processed, columns=numeric_features.tolist() + 
-# #                                                     preprocessor.named_transformers_['cat']['onehot'].get_feature_names_out(categorical_features).tolist())
+    if iv < 0.02:
+        return 'not useful'
+    elif 0.02 <= iv < 0.1:
+        return 'weak relationship'
+    elif 0.1 <= iv < 0.3:
+        return 'medium strength relationship'
+    elif 0.3 <= iv < 0.5:
+        return 'strong relationship'
+    else:
+        return 'suspicious relationship'
+
+def preprocess_data(data):
+    data = create_aggregate_features(data)
+    data = extract_datetime_features(data, 'TransactionStartTime')
+    data = encode_categorical_variables(data)
+    data = handle_missing_values(data)
+    data = normalize_numerical_features(data)
     
-# #     return df_processed
+    # Calculate IV for categorical variables
+    categorical_features = ['CurrencyCode', 'CountryCode', 'ProviderId', 'ProductId', 'ProductCategory', 'ChannelId', 'PricingStrategy']
+    iv_values = {}
+    for feature in categorical_features:
+        iv_values[feature] = calculate_iv(data[feature], data['FraudResult'])
+    
+    # Filter features based on IV thresholds
+    useful_features = [feature for feature, iv_label in iv_values.items() if iv_label in ['medium strength relationship', 'strong relationship', 'suspicious relationship']]
+    
+    data = data[useful_features]  # Include only useful features
+    
+    # Perform WoE binning
+    data_woe = perform_woe_binning(data)
+    
+    return data_woe
 
-# # # Apply the functions
-# # extract_numeric_parts(df)
-# # df_processed = preprocess_df(df)
+if __name__ == "__main__":
+    data = pd.read_csv('creditScoring/data/raw/data.csv')
+    data_preprocessed = preprocess_data(data)
+    print(data_preprocessed.shape)
 
-# # # Save the processed DataFrame to a CSV file
-# # df_processed.to_csv('data/processed/processed.csv', index=False)
+
+
+
+
+
 
 # from sklearn.preprocessing import StandardScaler, OneHotEncoder
 # from sklearn.impute import SimpleImputer
@@ -83,38 +71,50 @@
 #         ])
 
 #     data_preprocessed = preprocessor.fit_transform(data)
-#     return data_preprocessed
+    
+#     # Convert the sparse matrix to a dense array
+#     return data_preprocessed.toarray()
 
 # if __name__ == "__main__":
 #     data = pd.read_csv('data/raw/data.csv')
 #     data_preprocessed = preprocess_data(data)
 #     print(data_preprocessed.shape)
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.impute import SimpleImputer
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-import pandas as pd
 
-def preprocess_data(data):
-    categorical_features = ['CurrencyCode', 'CountryCode', 'ProviderId', 'ProductId', 'ProductCategory', 'ChannelId', 'PricingStrategy']
-    numerical_features = ['Amount', 'Value']
 
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', Pipeline(steps=[
-                ('imputer', SimpleImputer(strategy='mean')),
-                ('scaler', StandardScaler())]), numerical_features),
-            ('cat', Pipeline(steps=[
-                ('imputer', SimpleImputer(strategy='most_frequent')),
-                ('onehot', OneHotEncoder(handle_unknown='ignore'))]), categorical_features)
-        ])
+# from sklearn.preprocessing import StandardScaler, OneHotEncoder
+# from sklearn.impute import SimpleImputer
+# from sklearn.compose import ColumnTransformer
+# from sklearn.pipeline import Pipeline
+# import pandas as pd
+# from xverse.transformer import WOE
 
-    data_preprocessed = preprocessor.fit_transform(data)
+# def preprocess_data(data, target_column):
+#     categorical_features = ['CurrencyCode', 'CountryCode', 'ProviderId', 'ProductId', 'ProductCategory', 'ChannelId', 'PricingStrategy']
+#     numerical_features = ['Amount', 'Value']
     
-    # Convert the sparse matrix to a dense array
-    return data_preprocessed.toarray()
+#     # WoE transformation for categorical features
+#     woe = WOE()
+#     woe.fit(data[categorical_features], data[target_column])
+#     data_woe = woe.transform(data[categorical_features])
 
-if __name__ == "__main__":
-    data = pd.read_csv('data/raw/data.csv')
-    data_preprocessed = preprocess_data(data)
-    print(data_preprocessed.shape)
+#     # Combine WoE-transformed categorical features with numerical features
+#     data_combined = pd.concat([data_woe, data[numerical_features]], axis=1)
+    
+#     preprocessor = ColumnTransformer(
+#         transformers=[
+#             ('num', Pipeline(steps=[
+#                 ('imputer', SimpleImputer(strategy='mean')),
+#                 ('scaler', StandardScaler())]), numerical_features),
+#             ('cat', 'passthrough', data_woe.columns)
+#         ])
+    
+#     data_preprocessed = preprocessor.fit_transform(data_combined)
+    
+#     # Convert the sparse matrix to a dense array
+#     return data_preprocessed
+
+# if __name__ == "__main__":
+#     data = pd.read_csv('creditScoring/data/raw/data.csv')
+#     data_preprocessed = preprocess_data(data, target_column='FraudResult')
+#     print(data_preprocessed.shape)
+
